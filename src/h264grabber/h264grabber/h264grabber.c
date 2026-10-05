@@ -554,7 +554,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Error opening fifo %s\n", FIFO_NAME_HIGH);
                 return -1;
             }
-            if (fcntl(fileno(fOut), F_SETPIPE_SZ, 262144) != 262144) {
+            if (fcntl(fileno(fOut), F_SETPIPE_SZ, 65536) != 65536) {
                 fprintf(stderr, "Cannot set size of fifo\n");
                 return -1;
             };
