@@ -68,8 +68,8 @@ sed -i '/^\.\/cloud/s/^/#/' /home/app/init.sh
 sed -i '/^\.\/mp4record/s/^/#/' /home/app/init.sh
 sed -i '/^\.\/rmm/s/^/#/' /home/app/init.sh
 sed -i 's|^sleep 2$|#sleep 2|' /home/app/init.sh
-# set swappiness from 0 to 60
-sed -i "s#echo 0 > /proc/sys/vm/swappiness#echo 60 > /proc/sys/vm/swappiness#" /home/app/init.sh
+# set swappiness to 15 for 63US SD card performance
+sed -i "s#echo 0 > /proc/sys/vm/swappiness#echo 15 > /proc/sys/vm/swappiness#" /home/app/init.sh
 
 # Comment out the rtc command that sometimes hangs the camera in base/init.sh
 # rtctime=$(/home/base/tools/rtctool -g time

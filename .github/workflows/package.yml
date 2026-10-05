@@ -1,0 +1,40 @@
+name: Package 63US SD Distribution
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Assemble 63US SD Card Distribution Payload
+        run: |
+          mkdir -p dist/yi-hack-v5/etc dist/yi-hack-v5/script dist/yi-hack-v5/www/cgi-bin dist/yi-hack-v5/bin dist/yi-hack-v5/lib
+          
+          # Copy static files & configs
+          cp -r src/static/static/home/yi-hack-v5/etc/* dist/yi-hack-v5/etc/
+          cp -r src/static/static/home/yi-hack-v5/script/* dist/yi-hack-v5/script/
+          
+          # Copy custom PTZ CGI scripts
+          cp -r src/www/httpd/cgi-bin/* dist/yi-hack-v5/www/cgi-bin/
+          cp -r src/www/httpd/htdocs dist/yi-hack-v5/www/
+          
+          # Include version
+          cp VERSION dist/yi-hack-v5/version
+          
+          # Create zip
+          cd dist
+          zip -r ../yi-hack-v5-63us-sd-distribution.zip yi-hack-v5/
+          cd ..
+
+      - name: Upload Distribution Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yi-hack-v5-63us-sd-distribution
+          path: yi-hack-v5-63us-sd-distribution.zip

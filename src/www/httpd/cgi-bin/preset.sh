@@ -1,31 +1,13 @@
 #!/bin/sh
 
-# 0.4.1
-
 YI_HACK_PREFIX="/tmp/sd/yi-hack-v5"
-PTZ_CONF_FILE=$YI_HACK_PREFIX/etc/ptz_presets.conf
 PTZ_SCRIPT=$YI_HACK_PREFIX/script/ptz_presets.sh
-
-. $YI_HACK_PREFIX/www/cgi-bin/validate.sh
-
-return_error() {
-    printf "Content-type: application/json\r\n\r\n"
-    printf "{\n"
-    printf "\"%s\":\"%s\",\\n" "error" "true"
-    printf "\"%s\":\"%s\"\\n" "message" "$@"
-    printf "}"
-}
-
-if ! $(validateQueryString $QUERY_STRING); then
-    return_error "Invalid query"
-    exit
-fi
 
 ACTION="none"
 NUM=-1
 NAME=""
 
-for I in 1 2 3
+for I in 1 2 3 4
 do
     CONF="$(echo $QUERY_STRING | cut -d'&' -f$I | cut -d'=' -f1)"
     VAL="$(echo $QUERY_STRING | cut -d'&' -f$I | cut -d'=' -f2)"
@@ -33,29 +15,20 @@ do
     if [ "$CONF" == "action" ] ; then
         ACTION="$VAL"
     elif [ "$CONF" == "num" ] ; then
-        if $(validateNumber $VAL); then
-            NUM="$VAL"
-        else
-            if [ "$VAL" == "all" ]; then
-                NUM="$VAL"
-            else
-                return_error "Wrong arguments"
-                exit
-            fi
-        fi
+        NUM="$VAL"
     elif [ "$CONF" == "name" ] ; then
-        if $(validateString $VAL); then
-            NAME="$VAL"
-        else
-            return_error "Wrong arguments"
-            exit
-        fi
+        NAME="$VAL"
     fi
 done
 
-if [ "$ACTION" == "none" ] || [ "$ACTION" == "get_presets" ]; then
-    return_error -99
-    exit
+if [ "$NUM" == "-1" ] && [ -n "$NAME" ]; then
+    # Map common named presets (like Frigate return_preset: Home)
+    case $(echo "$NAME" | tr '[:upper:]' '[:lower:]') in
+        "home") NUM=0 ;;
+        "bed"|"dogbed") NUM=1 ;;
+        "door") NUM=2 ;;
+        *) NUM=0 ;;
+    esac
 fi
 
 if [ "$NUM" != "-1" ]; then
@@ -63,19 +36,19 @@ if [ "$NUM" != "-1" ]; then
 else
     NUM=""
 fi
-if [ ! -z $NAME ]; then
-    NAME="-m $NAME"
+
+# Call our custom script
+if [ "$ACTION" == "go_preset" ]; then
+    killall ptz_presets.sh 2>/dev/null
+    $PTZ_SCRIPT -a $ACTION $NUM > /dev/null 2>&1 &
+    RES="Movement started in background"
 else
-    NAME=""
+    RES=$($PTZ_SCRIPT -a $ACTION $NUM)
 fi
 
-RES=$($PTZ_SCRIPT -a $ACTION $NUM $NAME)
-
-if [ "$RES" == "" ]; then
-    printf "Content-type: application/json\r\n\r\n"
-    printf "{\n"
-    printf "\"%s\":\"%s\"\\n" "error" "false"
-    printf "}"
-else
-    return_error $RES
-fi
+# Output success JSON for Home Assistant / Frigate
+printf "Content-type: application/json\r\n\r\n"
+printf "{\n"
+printf "\"%s\":\"%s\",\n" "error" "false"
+printf "\"%s\":\"%s\"\n" "output" "$RES"
+printf "}\n"

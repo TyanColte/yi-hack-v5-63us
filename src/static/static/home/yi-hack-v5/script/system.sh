@@ -468,6 +468,12 @@ if [ -f "/tmp/sd/yi-hack-v5/startup.sh" ]; then
 fi
 
 # First run on startup, then every day via crond
-$YI_HACK_PREFIX/script/check_update.sh
-
 crond -c $YI_HACK_PREFIX/etc/crontabs
+
+# 63US SoC & RAM Optimizations
+killall /usr/sbin/crond 2>/dev/null || true
+killall udevd 2>/dev/null || true
+killall log_server 2>/dev/null || true
+sysctl -w vm.swappiness=15 2>/dev/null || true
+echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+

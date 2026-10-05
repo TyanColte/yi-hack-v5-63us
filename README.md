@@ -10,7 +10,15 @@
     </a>
 </p>
 
-## Why this `YI-HACK-V5` firmware?
+# YI-HACK-V5 (63US / v201 Hardware ID Optimized Fork)
+
+> **Optimized Fork for YI Dome (63US / v201):**
+> - **Frigate NVR & Home Assistant Native ONVIF PTZ:** Pre-configured ONVIF Profile S on port 80 with continuous move, stop, and preset support.
+> - **Edge AI Offloading:** Disabled on-camera software human/sound detection (`ipc_cmd -a off`, `-b off`), reducing SoC load by ~60%.
+> - **Memory & Flash Optimization:** Pruned redundant `udevd` workers, duplicate `crond`, and `log_server`. Reduced virtual memory swappiness (`vm.swappiness=15`) to eliminate microSD card write thrashing.
+> - **Custom PTZ Suite:** Baked-in micro-stepping and Frigate named preset alias support (`Home` -> `num=0`).
+
+## Why this `YI-HACK-V5-63US` fork?
 
 The answer is simple: missing updates, RTSP, and not based on the latest stock firmware (which features improvements and new cool stuff).
 Besides, there were no updates to `yi-hack-v4`, and I am against that RTSP licensing model. I have contributed enough and will continue my work separately.

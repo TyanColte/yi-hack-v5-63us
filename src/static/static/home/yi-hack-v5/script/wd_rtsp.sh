@@ -25,7 +25,7 @@ get_config()
 
 COUNTER=0
 COUNTER_LIMIT=10
-INTERVAL=10
+INTERVAL=30
 
 if [[ "$(get_config USERNAME)" != "" ]] ; then
     USERNAME=$(get_config USERNAME)
