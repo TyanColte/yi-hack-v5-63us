@@ -446,8 +446,6 @@ if [ "$FREE_SPACE" != "0" ]; then
     echo "0 * * * * /tmp/sd/yi-hack-v5/script/clean_records.sh $FREE_SPACE" > /var/spool/cron/crontabs/root
 fi
 
-/usr/sbin/crond -c /var/spool/cron/crontabs/
-
 # Add MQTT Advertise
 if [ -f "$YI_HACK_PREFIX/script/mqtt_advertise/startup.sh" ]; then
     $YI_HACK_PREFIX/script/mqtt_advertise/startup.sh
@@ -468,12 +466,16 @@ if [ -f "/tmp/sd/yi-hack-v5/startup.sh" ]; then
 fi
 
 # First run on startup, then every day via crond
+killall -9 crond 2>/dev/null || true
 crond -c $YI_HACK_PREFIX/etc/crontabs
 
-# 63US SoC & RAM Optimizations
-killall /usr/sbin/crond 2>/dev/null || true
+# 63US SoC, Wi-Fi & RAM Optimizations
 killall udevd 2>/dev/null || true
 killall log_server 2>/dev/null || true
 sysctl -w vm.swappiness=15 2>/dev/null || true
 echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+
+# Wi-Fi 802.11n Frame Aggregation (A-MPDU) & TX Bursting for MediaTek MT7601U
+iwpriv wlan0 set PktAggregate=1 2>/dev/null || true
+iwpriv wlan0 set TxBurst=1 2>/dev/null || true
 
